@@ -4,7 +4,7 @@ Aiyuan Yang, Bin Xiao, Bingning Wang, Borong Zhang, Ce Bian, Chao Yin, Chenxu Lv
 
 
 ## Presenter:Changzhou Li
-- 
+
 
 ## Overview
 Large language models (LLMs) have demonstrated remarkable performance on a variety of natural language tasks based on just a few examples of natural language instructions, reducing the need for extensive feature engineering. However, most powerful LLMs are closed-source or limited in their capability for languages other than English. In this technical report, we present Baichuan 2, a series of large-scale multilingual language models containing 7 billion and 13 billion parameters, trained from scratch, on 2.6 trillion tokens. Baichuan 2 matches or outperforms other open-source models of similar size on public benchmarks like MMLU, CMMLU, GSM8K, and HumanEval. Furthermore, Baichuan 2 excels in vertical domains such as medicine and law. We will release all pre-training model checkpoints to benefit the research community in better understanding the training dynamics of Baichuan 2.
@@ -12,7 +12,6 @@ Large language models (LLMs) have demonstrated remarkable performance on a varie
 In recent years, the field of natural language processing has been revolutionized by the advent of large language models (LLMs). These models have shown exceptional ability in understanding and generating human-like text, leading to significant improvements in a variety of language tasks. However, the majority of these advanced models are proprietary, closed-source, and often exhibit limitations when dealing with languages other than English. 
 ### Problem Addressed
 The paper introduces "Baichuan 2," which tackles the problem of accessibility and language inclusivity in large-scale language models. The authors aim to provide an open-source alternative to the existing LLMs that not only performs competitively on standard benchmarks but also offers extensive multilingual support and excels in specialized domains such as medicine and law.
-
 ### Approach:
 The authors' approach involves training Baichuan 2 from scratch, using a massive dataset of 2.6 trillion tokens. The model comes in two sizes, with 7 billion and 13 billion parameters, positioning it among the larger models available in the open-source domain. The training process is designed to be transparent, with checkpoints to be released publicly, allowing the research community to study and understand the model's training dynamics.
 ### Training Data
@@ -37,9 +36,10 @@ shown in Figure 1.
 
 ## Architecture Overview
 
-The model architecture of Baichuan 2 is based on the prevailing Transformer (Vaswani et al., 2017). with following modifications.
+The model architecture of Baichuan 2 is based on the prevailing Transformer (Vaswani et al., 2017) with the following modifications.
 
 ### Tokenizer
+<img width="415" alt="截屏2023-11-05 15 58 18" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/93ca01e6-5f9b-47bd-8339-06ed8f8b9e20">
 
 ### Positional Embeddings
 #### Rotary Embedding (RoPE)
