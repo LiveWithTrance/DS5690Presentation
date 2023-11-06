@@ -61,8 +61,8 @@ A tokenizer needs to balance two critical factors: a high compression rate for e
 
 
 ### Byte-pair encoding (BPE)
-
-Byte-Pair Encoding (BPE) is a data compression and subword tokenization algorithm.
+ 
+Byte-Pair Encoding (BPE) is a data compression and subword tokenization algorithm.(Kudo and Richardson, 2018)
 
 BPE iteratively replaces the most frequent pair of bytes in a sequence with a single, unused byte. For instance, given the character sequence aaabdaaabac, the sub-sequence aa occurs three times and is the most frequent pair. BPE would replace aa with a new symbol, say Z, resulting in the sequence ZabdZabac​3​. This process continues iteratively, reducing the most common pairs of characters or bytes in the data, which in turn helps in compressing the data.
 
@@ -72,7 +72,7 @@ Usage: This approach enables LLM models to handle out-of-vocabulary (OOV) words 
 
 ### Rotary Positional Embedding (RoPE)
 
-RoPE is used for for Baichuan 2-7B.
+RoPE is used for for Baichuan 2-7B.(Su et al., 2021)
 
 Rotary Position Embedding (RoPE) is a concept used within transformer architectures to encode the absolute position of tokens in a sequence. Unlike traditional position embeddings that add a separate positional vector to each token, RoPE incorporates positional information directly into the attention mechanism of the transformer model.
 
@@ -84,7 +84,7 @@ Decaying Inter-Token Dependency: It reduces the influence of each token on other
 
 Enhanced Self-Attention: RoPE is capable of equipping linear self-attention with relative position encoding. By considering the relative positions of tokens during self-attention, models can achieve more accurate predictions and a deeper understanding of the relationships between tokens​1​.
 
-### Attention with Linear Biases (ALiBi)
+### Attention with Linear Biases (ALiBi) (Press et al.,2021)
 
 
 Attention with Linear Biases(ALiBi) is used for Baichuan 2-13B, which is different from most of the open-source models using RoPE.
@@ -115,7 +115,7 @@ Where:
 
 ## Activations and Normalizations
 
-### SwiGLU (Swish-Gated Linear Unit)
+### SwiGLU (Swish-Gated Linear Unit) (Shazeer, 2020) 
 
 SwiGLU is designed to leverage the benefits of both the Swish and Gated Linear Unit (GLU) activation functions​​. Activation functions in neural networks, like SwiGLU, are crucial for introducing non-linearity, allowing networks to learn complex relationships between inputs and outputs​1.
 
@@ -123,20 +123,20 @@ The Swish function is defined as Swish(x) = x * sigmoid(beta * x), with 'beta' b
 
 However, this paper mentions that SwiGLU has a “bilinear” layer and contains three parameter matrices, differing from the vanilla Transformer’s feed-forward layer that has two matrices, so Beichuan2 reduce the hidden sizefrom 4 times the hidden size to 8/3 hidden size and rounded to the multiply of 128.
 
-### Memory efficient attention 
+### Memory efficient attention (Rabe andStaats, 2021)
 
 For the attention layer of Baichuan 2, we adopt the memory efficient attention (Rabe andStaats, 2021) implemented by xFormers2
 . By leveraging xFormers’ optimized attention with biasing capabilities, we can efficiently incorporate ALiBi’s bias-based positional encoding while
 reducing memory overhead. This provides performance and efficiency benefits for Baichuan 2’s large-scale training.
 
 
-### Root Mean Square Layer Normalization (RMSNorm)
+### Root Mean Square Layer Normalization (RMSNorm)  (Zhang and Sennrich, 2019),
 
 RMSNorm modifies LayerNorm by removing the re-centering operation, aiming to provide a more efficient normalization technique without sacrificing performance. It has been shown to be effective across different tasks and models, and offers a more computationally efficient alternative to LayerNorm.
 
 ## Optimization
 
-### AdamW
+### AdamW W (Loshchilov and Hutter, 2017)
 
 They use the AdamW optimizer with β1 set to 0.9 and β2 set to 0.95, weight decay of 0.1, and clip the grad norm to 0.5. The models are warmed up with 2,000 linear scaling steps to reach the max learning rate, followed by cosine decay.
 
