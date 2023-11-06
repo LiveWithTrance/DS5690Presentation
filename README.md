@@ -63,10 +63,16 @@ Attention with Linear Biases (ALiBi) presents a novel method for inference extra
 2. **Working Mechanism**:
    - **Bias Addition**: In the attention sublayer of the Transformer model, when computing attention scores for each head, a constant bias is added to each score. This bias is head-specific and is set to a scalar known as \( m \), which remains constant and is not learned during training【47†(serp.ai)】.
    - **Modified Attention Score Calculation**: The attention score calculation involves the dot product of two vectors, \( \textbf{q}_i \) and \( \textbf{k}_j \), followed by the application of the softmax function in traditional attention mechanisms. However, ALiBi modifies this process by adding a bias term to the dot product before the softmax function is applied. The new formula for attention scores in ALiBi is:
-     \[
-     \text{Attention}(\textbf{q}, \textbf{k}) = \text{softmax}\left(\frac{\textbf{q}\textbf{k}^T + m}{\sqrt{d_k}}\right) \textbf{v}
-     \]
-     In this formula, \( m \) represents the head-specific bias scalar, and \( \textbf{q} \) and \( \textbf{k} \) represent vectors of dimension \( d_k \)【47†(serp.ai)】.
+  ## Attention with Linear Biases (ALiBi)
+
+### Introduction
+ALiBi, which stands for Attention with Linear Biases, is a method to compute attention scores within Transformer models. It introduces a head-specific constant bias to the attention mechanism, simplifying the computation and eliminating the need for position embeddings.
+
+### How ALiBi Works
+Instead of relying on learned positional embeddings, ALiBi adds a constant scalar bias to each attention score. This bias is head-specific and remains constant during training. The attention scores are computed as follows:
+
+```math
+\text{Attention}(\mathbf{q}, \mathbf{k}) = \text{softmax}\left(\frac{\mathbf{q}\mathbf{k}^T + m}{\sqrt{d_k}}\right) \mathbf{v}
 
 3. **Advantages**:
    - **Simplification and Speed**: ALiBi simplifies the calculation of attention scores, making it faster than using traditional position embeddings. It does not require the additional computation and optimization that comes with learning position embeddings during training【47†(serp.ai)】.
