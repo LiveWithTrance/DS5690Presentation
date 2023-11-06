@@ -335,7 +335,7 @@ Traditional position embeddings can sometimes be problematic, especially when de
 
 
 ## Video Overview
-https://youtu.be/ZrBtgtWXbb4?si=Wm1Fuy32fOJky3JZ
+https://drive.google.com/file/d/1HFnK4LE1Wq9MhQ2rccR-6m_abMUnfbXm/view?usp=drive_link
 
 ## Code Demo
 
