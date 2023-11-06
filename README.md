@@ -160,6 +160,9 @@ They observe that the error decreases as a power function of training set size, 
 ### Model Size Range
 They launched a range of model sizes from 10M to 3B parameters, each trained for up to 1 trillion tokens, using consistent hyper-parameters and the same dataset sourced from Baichuan 2. They use these results to inform the training of larger models.
 
+## RLHF
+
+<img width="453" alt="截屏2023-11-06 10 29 23" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/4fc2b2a8-e12f-4791-a95a-103bf84e8b09">
 
 **************************
 ## Pseudal-code
@@ -311,7 +314,11 @@ They launched a range of model sizes from 10M to 3B parameters, each trained for
 
 ### Limitations and Ethical Considerations
 
-the knowledge of Baichuan 2 models is static and can be outdated or incorrect, posing challenges in fields that requireup-to-date information like medicine or law. While optimized for Chinese and English for safety, themodel has limitations in other languages and maynot fully capture biases relevant to non-Chinese cultures.
+Aim to be multilingual large language model but only show performace on English and Chinese benchmarks.
+
+Much of its training data originates from the internet. These data contains biases and toxicity, which might cause ethical problems.
+
+The knowledge of Baichuan 2 models is static and can be outdated or incorrect, posing challenges in fields that require up-to-date information like medicine or law. While optimized for Chinese and English for safety, the model has limitations in other languages and maynot fully capture biases relevant to non-Chinese cultures.
 
 There’s also the potential for misuse, as the model could be used to generate harmful or misleading content. Although the team had tried their best
 efforts to balance safety and utility, some safety measures may appear as over-cautions, affecting the model’s usability for certain tasks. 
@@ -322,7 +329,7 @@ This approach enables LLM models to handle out-of-vocabulary (OOV) words and red
 
 ## Answer: Why Use ALiBi?
 
-Traditional position embeddings can sometimes be problematic, especially when dealing with non-linear relationships in language or when handling sequences longer than those seen during training. ALiBi's head-specific constant bias simplifies the model without compromising on performance, making it an attractive choice for NLP tasks.
+Traditional position embeddings can sometimes be problematic, especially when dealing with non-linear relationships in language or when handling sequences longer than those seen during training. ALiBi's head-specific constant bias simplifies the model without compromising on performance.
 
 
 ## Video Overview
