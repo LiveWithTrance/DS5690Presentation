@@ -18,7 +18,8 @@ Most powerful Large language models (LLMs) are closed-source or limited in their
 ### Beichuan2 Performance
 
 #### Academic Benchmark
-<img width="740" alt="benchmark" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/db312d4f-a6d4-409a-a428-06ae830bf59c">
+
+<img width="740" alt="benchmark" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/0497392f-bcb7-4063-84be-827c35bbfef4">
 
 In the above, C-Eval, CMMLU and Gaokao are the Chinese benchmarks.
 
@@ -27,7 +28,8 @@ In the above, C-Eval, CMMLU and Gaokao are the Chinese benchmarks.
 
 The composition of the training data:
 
-<img width="415" alt="Training data resource" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/58f42a34-df73-489f-96ba-52c11cc6b929">
+<img width="415" alt="Training data resource" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/cbde6016-08ba-488c-b606-20dc7abd17a1">
+
 
 ## Data Processing 
 
@@ -37,9 +39,11 @@ scored. Those scores are then used for data sampling in pre-training.
 
 The size of the training data at different stages of data processing:
 
-<img width="882" alt="截屏2023-11-05 22 29 30" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/015e2458-292f-4507-907a-a8d6accb9418">
+<img width="882" alt="截屏2023-11-05 22 29 30" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/7681e1fb-5868-46a6-a5f9-92d47b843810">
+
 
 ### Question 1: What is the usage of Byte-pair encoding (BPE)?
+
 ### Question 2: What is the advantage of Attention with Linear Biases (ALiBi)?
 
 
@@ -53,7 +57,8 @@ The model architecture of Baichuan 2 is based on the prevailing Transformer (Vas
 
 A tokenizer needs to balance two critical factors: a high compression rate for efficient inference, and an appropriately sized vocabulary to ensure adequate training of each word embedding.
 
-<img width="415" alt="截屏2023-11-05 15 58 18" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/93ca01e6-5f9b-47bd-8339-06ed8f8b9e20">
+<img width="466" alt="tokenizer" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/5f59e771-347f-4b37-9673-c00a13dd0710">
+
 
 ### Byte-pair encoding (BPE)
 
@@ -325,7 +330,7 @@ https://youtu.be/ZrBtgtWXbb4?si=Wm1Fuy32fOJky3JZ
 
 ## Code Demo
 
-- Try Beichuan2:
+- Try Beichuan2: 
   
 - Fine tune Beichuan2: 
 
