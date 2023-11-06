@@ -29,6 +29,7 @@ The composition of the training corpus:
 
 
 ### Question1
+#### Why Use ALiBi?
 
 ### Question2
 
@@ -52,13 +53,14 @@ Byte-Pair Encoding (BPE) is a data compression and subword tokenization algorith
 
 RoPE is used for for Baichuan 2-7B.
 
+
 #### Attention with Linear Biases (ALiBi)
 ALiBi is used for Baichuan 2-13B, which is different from most of the open-source models using RoPE.
 
 Attention with Linear Biases (ALiBi) presents a novel method for inference extrapolation in Transformer models, particularly during the computation of attention scores for each head. Here's a detailed breakdown:
 
 1. **Introduction and Purpose**:
-   ALiBi stands for Attention with Linear Biases. It's introduced as an alternative to traditional positional encodings in Transformers, aiming to facilitate the handling of sequences at inference time which are longer than the ones encountered during training. Unlike position embeddings, ALiBi adds a constant bias to each attention score, simplifying computations and foregoing the learning of the scalar throughout training【39†(serp.ai)】【41†(Papers With Code)】.
+   ALiBi stands for Attention with Linear Biases. It's introduced as an alternative to traditional positional encodings in Transformers, aiming to facilitate the handling of sequences at inference time which are longer than the ones encountered during training. Unlike position embeddings, ALiBi adds a constant bias to each attention score, simplifying computations and foregoing the learning of the scalar throughout training.
 
 2. **Working Mechanism**:
    - **Bias Addition**: In the attention sublayer of the Transformer model, when computing attention scores for each head, a constant bias is added to each score. This bias is head-specific and is set to a scalar known as \( m \), which remains constant and is not learned during training【47†(serp.ai)】.
@@ -74,6 +76,20 @@ Instead of relying on learned positional embeddings, ALiBi adds a constant scala
 ```math
 \text{Attention}(\mathbf{q}, \mathbf{k}) = \text{softmax}\left(\frac{\mathbf{q}\mathbf{k}^T + m}{\sqrt{d_k}}\right) \mathbf{v}
 ```
+
+In this equation:
+- `\mathbf{q}` and `\mathbf{k}` represent query and key vectors respectively.
+- `m` is a constant scalar bias specific to each head in the model.
+- `d_k` is the dimensionality of the key vectors.
+
+### Advantages of ALiBi
+- **Simplifies Calculations**: ALiBi eliminates the need for position embeddings, simplifying the overall computation within the attention mechanism.
+- **Maintains Accuracy**: Despite its simplicity, ALiBi has been shown to produce attention scores that are just as accurate as those using traditional position embeddings.
+- **Eases Implementation**: Without position embeddings, ALiBi reduces the computational complexity, making it easier to implement and train Transformer models.
+- **Handles Longer Sequences**: ALiBi is particularly effective for sequences at inference time that are longer than those encountered during training.
+
+### Answer of question1 : Why Use ALiBi?
+Traditional position embeddings can sometimes be problematic, especially when dealing with non-linear relationships in language or when handling sequences longer than those seen during training. ALiBi's head-specific constant bias simplifies the model without compromising on performance, making it an attractive choice for NLP tasks.
 
 3. **Advantages**:
    - **Simplification and Speed**: ALiBi simplifies the calculation of attention scores, making it faster than using traditional position embeddings. It does not require the additional computation and optimization that comes with learning position embeddings during training【47†(serp.ai)】.
