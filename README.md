@@ -121,7 +121,7 @@ SwiGLU is designed to leverage the benefits of both the Swish and Gated Linear U
 
 The Swish function is defined as Swish(x) = x * sigmoid(beta * x), with 'beta' being a trainable parameter, and it has been shown to perform well in deep networks due to its smoothness​1​. On the other hand, GLU, proposed by Microsoft researchers, is expressed as GLU(x) = x * sigmoid(Wx + b), with 'W' and 'b' also being trainable parameters, and has shown effectiveness in natural language processing tasks.
 
-However, this paper mentions that SwiGLU has a “bilinear” layer and contains three parameter matrices, differing from the vanilla Transformer’s feed-forward layer that has two matrices, so Beichuan2 reduce the hidden sizefrom 4 times the hidden size to 3/8 hidden size and rounded to the multiply of 128.
+However, this paper mentions that SwiGLU has a “bilinear” layer and contains three parameter matrices, differing from the vanilla Transformer’s feed-forward layer that has two matrices, so Beichuan2 reduce the hidden sizefrom 4 times the hidden size to 8/3 hidden size and rounded to the multiply of 128.
 
 ### Memory efficient attention 
 
