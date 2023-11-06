@@ -40,6 +40,17 @@ The composition of the training data:
 
 The model architecture of Baichuan 2 is based on the prevailing Transformer (Vaswani et al., 2017) with the following modifications.
 
+## Data Processing 
+
+Beichuan2 focuses on data frequency and quality. Data frequency relies on clustering and deduplication. Beichuan2 bulit a large-scale deduplication and clustering system supporting both LSH-like(Locality-sensitive hashing) features and dense embedding features. This system can cluster
+and deduplicate trillion-scale data within hours. Based on the clustering, individual documents, paragraphs, and sentences are deduplicated and
+scored. Those scores are then used for data sampling in pre-training. 
+
+The size of the training data at different stages of data processing:
+
+<img width="882" alt="截屏2023-11-05 22 29 30" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/015e2458-292f-4507-907a-a8d6accb9418">
+
+
 ## Tokenizer
 
 A tokenizer needs to balance two critical factors: a high compression rate for efficient inference, and an appropriately sized vocabulary to ensure adequate training of each word embedding.
@@ -64,7 +75,7 @@ Rotary Position Embedding (RoPE) is a concept used within transformer architectu
 
 Advantages:
 
-Flexibility with Sequence Length: RoPE can handle any sequence length, making it adaptable for NLP models that process texts of varying lengths, unlike traditional position embeddings that are fixed to a specific sequence length​1​.
+Flexibility with Sequence Length: RoPE can handle any sequence length, making it adaptable for NLP models that process texts of varying lengths, unlike traditional position embeddings that are fixed to a specific sequence length​​.
 
 Decaying Inter-Token Dependency: It reduces the influence of each token on others with increasing relative distances, which is beneficial for long sequences. This feature helps in reducing computational complexity while still preserving accurate predictions​1​.
 
@@ -78,28 +89,25 @@ Attention with Linear Biases(ALiBi) is used for Baichuan 2-13B, which is differe
 Attention with Linear Biases is introduced as an alternative to traditional positional encodings in Transformers, aiming to facilitate the handling of sequences at inference time which are longer than the ones encountered during training. Unlike position embeddings, ALiBi adds a constant bias to each attention score, simplifying computations and foregoing the learning of the scalar throughout training.
 
 **Working Mechanism**:
+
 - **Bias Addition**: In the attention sublayer of the Transformer model, when computing attention scores for each head, a constant bias is added to each score. This bias is head-specific and is set to a scalar known as \( m \), which remains constant and is not learned during training.
-- **Modified Attention Score Calculation**: The attention score calculation involves the dot product of two vectors, \( \mathbf{q}_i \) and \( \mathbf{k}_j \), followed by the application of the softmax function in traditional attention mechanisms. However, ALiBi modifies this process by adding a bias term to the dot product before the softmax function is applied. The new formula for attention scores in ALiBi is:
+- **Modified Attention Score Calculation**: The attention score calculation involves the dot product of two vectors, \( q\) and \( k\), followed by the application of the softmax function in traditional attention mechanisms. However, ALiBi modifies this process by adding a bias term to the dot product before the softmax function is applied. The new formula for attention scores in ALiBi is:
 
 $$
 \text{Attention}(\mathbf{q}, \mathbf{k}) = \text{softmax}\left(\frac{\mathbf{q}\mathbf{k}^T + m}{\sqrt{d_k}}\right) \mathbf{v}
 $$
 
 Where:
-- \( \mathbf{q} \) and \( \mathbf{k} \) are the query and key vectors, respectively.
+- \(q \) and \( k \) are the query and key vectors, respectively.
 - \( m \) is the constant bias added to the attention scores.
-- \( d_k \) is the dimension of the key vectors.
-- \( \mathbf{v} \) is the value vector.
+- \( d \) is the dimension of the key vectors.
+- \( v \) is the value vector.
 
 ### Advantages of ALiBi
 - **Simplifies Calculations**: ALiBi eliminates the need for position embeddings, simplifying the overall computation within the attention mechanism.
 - **Maintains Accuracy**: Despite its simplicity, ALiBi has been shown to produce attention scores that are just as accurate as those using traditional position embeddings.
 - **Eases Implementation**: Without position embeddings, ALiBi reduces the computational complexity, making it easier to implement and train Transformer models.
 - **Handles Longer Sequences**: ALiBi is particularly effective for sequences at inference time that are longer than those encountered during training.
-
-
-### Answer of question1 : Why Use ALiBi?
-Traditional position embeddings can sometimes be problematic, especially when dealing with non-linear relationships in language or when handling sequences longer than those seen during training. ALiBi's head-specific constant bias simplifies the model without compromising on performance, making it an attractive choice for NLP tasks.
 
 
 ## Activations and Normalizations
@@ -384,9 +392,10 @@ use of Baichuan 2 models. Meanwhile, we will
 continue to optimize these issues and release
 updated versions in the future.
 
-## Question Answer 1:
+## Answer: What is the usage of Byte-pair encoding (BPE)?
+## Answer: Why Use ALiBi?
+Traditional position embeddings can sometimes be problematic, especially when dealing with non-linear relationships in language or when handling sequences longer than those seen during training. ALiBi's head-specific constant bias simplifies the model without compromising on performance, making it an attractive choice for NLP tasks.
 
-## Question Answer 2:
 
 ## Video Overview
 https://youtu.be/ZrBtgtWXbb4?si=Wm1Fuy32fOJky3JZ
