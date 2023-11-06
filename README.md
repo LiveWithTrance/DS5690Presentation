@@ -159,248 +159,164 @@ They launched a range of model sizes from 10M to 3B parameters, each trained for
 **************************
 ## Pseudal-code
 
-### Algorithm: Byte-Pair Encoding (BPE)
+### Algorithm: Byte-pair Encoding (BPE)
+
 **Input:** 
-- `training_text` ∈ \( \mathcal{S} \), a string containing the text used for training.
-- `num_merges` ∈ \( \mathbb{N} \), the number of merge operations to perform.
-
-**Output:** 
-- `vocabulary` ∈ \( \mathcal{D} \), a dictionary representing the subword vocabulary with subwords as keys and their frequencies as values.
-
-1. **Initialize Vocabulary**:
-    - `vocabulary = get_unique_characters(training_text)`
-2. **Perform Merge Operations**:
-    - For `i` in `range(num_merges)`:
-        a. `pair_frequencies = calculate_pair_frequencies(training_text)`
-        b. `most_frequent_pair = find_most_frequent_pair(pair_frequencies)`
-        c. `new_subword = merge_pair(most_frequent_pair)`
-        d. `update_vocabulary(vocabulary, new_subword)`
-        e. `training_text = replace_pair(training_text, most_frequent_pair, new_subword)`
-
-### Algorithm: BPE Tokenization
-**Input:** 
-- `text` ∈ \( \mathcal{S} \), a string containing the text to be tokenized.
-- `vocabulary` ∈ \( \mathcal{D} \), the subword vocabulary obtained from the training phase.
-
-**Output:** 
-- `tokens` ∈ \( \mathcal{L} \), a list of tokens representing the tokenized text.
-
-1. **Initialize Token List**:
-    - `tokens = []`
-2. **Tokenize Text**:
-    - While `text` is not empty:
-        a. `longest_subword = find_longest_matching_subword(text, vocabulary)`
-        b. `tokens.append(longest_subword)`
-        c. `text = remove_subword(text, longest_subword)`
-
-### Algorithm: BPE Detokenization
-**Input:** 
-- `tokens` ∈ \( \mathcal{L} \), a list of tokens representing the tokenized text.
-
-**Output:** 
-- `detokenized_text` ∈ \( \mathcal{S} \), a string representing the detokenized text.
-
-1. **Concatenate Tokens**:
-    - `detokenized_text = concatenate_tokens(tokens)`
-
-
-### Algorithm: Rotary Positional Embedding (RoPE)
-**Input:**
-- \( x_q, x_k \) ∈ \( \mathbb{R}^{d} \), query and key tensors.
-  
-**Output:**
-- \( x_q', x_k' \) ∈ \( \mathbb{R}^{d} \), tensors with rotary embeddings applied.
-
-**Parameters:**
-- \( \theta \) ∈ \( \mathbb{R} \), a non-zero constant for rotation matrix computation.
-- \( m, n \) ∈ \( \mathbb{N} \), absolute positions of tokens.
-
-1. **Define Rotation Matrix Function:**
-   - \( \mathbf{R}_{\theta,t} = \begin{pmatrix} \cos t\theta & -\sin t\theta \\ \sin t\theta & \cos t\theta \end{pmatrix} \)
-
-2. **Compute Rotation Matrices for Queries and Keys:**
-   - \( \mathbf{R}_{\theta,m} = \mathbf{R}_{\theta,t=m} \)
-   - \( \mathbf{R}_{\theta,n} = \mathbf{R}_{\theta,t=n} \)
-
-3. **Apply Rotary Embeddings to Queries and Keys:**
-   - \( f_q(\mathbf{x}_m, m) = \mathbf{R}_{\theta,m} \mathbf{W}_q \mathbf{x}_m = \mathbf{q}_m \)
-   - \( f_k(\mathbf{x}_n, n) = \mathbf{R}_{\theta,n} \mathbf{W}_k \mathbf{x}_n = \mathbf{k}_n \)
-
-4. **Compute Relative Rotation Matrix:**
-   - \( \mathbf{R}_{\theta,n-m} = \mathbf{R}_{\theta,m}^\mathsf{T} \mathbf{R}_{\theta,n} \)
-
-5. **Compute Inner Product:**
-   - \( g(\mathbf{x}_m, \mathbf{x}_n, n-m) = \mathbf{x}_m^\mathsf{T} \mathbf{W}_q^\mathsf{T} \mathbf{R}_{\theta,n-m} \mathbf{W}_k \mathbf{x}_n = \mathbf{q}_m^\mathsf{T} \mathbf{k}_n \)
-
-6. **Output Rotated Queries and Keys:**
-   - \( x_q' = f_q(\mathbf{x}_m, m) \)
-   - \( x_k' = f_k(\mathbf{x}_n, n) \)
-
-7. **Return:**
-   - Return \( x_q', x_k' \)
- 
-
-### Algorithm: Attention
-**Input:**  
-$\( X \in \mathbb{R}^{d_x \times \ell_x} \)$, vector representations of primary sequence. <br>
-$\( Z \in \mathbb{R}^{d_z \times \ell_z} \)$, vector representations of context sequence. <br>
-
-**Output:**  
-$\( \tilde{v} \in \mathbb{R}^{d_{out} \times \ell_x} \)$, updated representations of tokens in X, folding in information from tokens in Z. <br>
-
-**Parameters:** $\( W_{qkv} \)$ consisting of: <br>
-$\( W_q \in \mathbb{R}^{d_{attn} \times d_x} \)$, $\( b_q \in \mathbb{R}^{d_{attn}} \)$ <br>
-$\( W_k \in \mathbb{R}^{d_{attn} \times d_z} \)$, $\( b_k \in \mathbb{R}^{d_{attn}} \)$ <br>
-$\( W_v \in \mathbb{R}^{d_{out} \times d_z} \)$, $\( b_v \in \mathbb{R}^{d_{out}} \)$ <br>
+- `sequence`: A sequence of characters or bytes.
 
 **Hyperparameters:**
-𝐻, number of attention heads <br>
-$\( \text{Mask} \in \{0,1\}^{\ell_z \times \ell_x} \)$ <br>
+- `vocab_size`: The desired size of the vocabulary.
 
-1. $\( q \leftarrow W_q X + b_q^T \)$  [[Query $\( \in \mathbb{R}^{d_{attn} \times \ell_x} \)]]$ <br>
-2. $\( k \leftarrow W_k Z + b_k^T \)$  [[Key $\( \in \mathbb{R}^{d_{attn} \times \ell_z} \)]]$ <br>
-3. $\( v \leftarrow W_v Z + b_v^T \)$  [[Value $\( \in \mathbb{R}^{d_{out} \times \ell_z} \)]]$ <br>
-4. $\( S \leftarrow KTQ \)$  [[Score $\( \in \mathbb{R}^{\ell_z \times \ell_x} \)]]$ <br>
-5. For each $\( t_z, t_x \)$, if $\( \text{Mask}[t_z, t_x] \)$, then $\( S[t_z, t_x] \leftarrow -\infty \)$ <br>
-6. $\( \tilde{v} = V \cdot \text{softmax}(S/\sqrt{d_{attn}}) \)$ <br>
+**Output:** 
+- A sequence with common pairs of bytes replaced with a single, unused byte.
 
-### Algorithm: Multi-head Attention
-**Input:**  
-$\( X \in \mathbb{R}^{d_x \times \ell_x} \)$, vector representations of primary sequence. <br>
-$\( Z \in \mathbb{R}^{d_z \times \ell_z} \)$, vector representations of context sequence. <br>
+**Procedure:**
+1. Initialize a vocabulary `V` with individual bytes from `sequence`.
+2. While `len(V) < vocab_size`:
+   1. Count the frequency of each adjacent byte pair in `sequence`.
+   2. Identify the most frequent pair of bytes `pair`.
+   3. Replace all occurrences of `pair` with a new, unused byte `Z`.
+   4. Add `Z` to the vocabulary `V`.
 
-**Output:**  
-$\( \tilde{V} \in \mathbb{R}^{d_{out} \times \ell_x} \)$, updated representations of tokens in X, folding in information from tokens in Z. <br>
+### Algorithm: Rotary Positional Embedding (RoPE)
 
-**Hyperparameters:** 
-H, number of attention heads <br>
-$\( \text{Mask} \in \{0,1\}^{\ell_z \times \ell_x} \)$ <br>
-
-**Parameters:** $W$ consisting of: <br>
-
-For $\( h \in [H] \)$, $\( W^h_{qkv} \)$ consisting of: <br>
-$\( W^h_q \in \mathbb{R}^{d_{attn} \times d_x} \)$, $\( b^h_q \in \mathbb{R}^{d_{attn}} \)$ <br>
-$\( W^h_k \in \mathbb{R}^{d_{attn} \times d_z} \)$, $\( b^h_k \in \mathbb{R}^{d_{attn}} \)$ <br>
-$\( W^h_v \in \mathbb{R}^{d_{mid} \times d_z} \)$, $\( b^h_v \in \mathbb{R}^{d_{mid}} \)$ <br>
-$\( W_o \in \mathbb{R}^{d_{out} \times H \times d_{mid}} \)$, $\( b_o \in \mathbb{R}^{d_{out}} \)$ <br>
-
-1. For $\( h \in [H] \)$: <br>
-2. $\( y^h \leftarrow \text{Attention}(X, Z|W^h_{qkv}, \text{Mask}) \)$ <br>
-3. $\( Y \leftarrow [y^1, y^2, ..., y^H] \)$ <br>
-4. Return $\( \tilde{V} = W_o Y + b_o^T \)$
-
-### Algorithm: Grouped-Query Attention
-$\tilde{V}$ ← $GroupedQueryAttention(X, Z|W, Mask)$  
-
-**Input:** $X ∈ R^{d_{\text{x}} \times l_{\text{x}}}$, $Z ∈ R^{d_{\text{z}}×l_{\text{z}}}$, vector representations of primary and context sequence.   
-**Output:** $\tilde{V} ∈ R^{d_{\text{out}}×l_{\text{x}}}$, updated representations of tokens in X, folding in information from tokens in Z.   
-
-**Hyperparameters:** 
-H, number of local attention heads   
-$N_kv$, number of key-value pairs   
-RepetitionFactor, repetitions for local heads ($N_rep$)   
-$\( \text{Mask} \in \{0,1\}^{\ell_z \times \ell_x} \)$, attention mask   
-
-**Parameters:** W consisting of:  
-For $h ∈ [H], W^h$ consisting of:    
-    $W^h_q ∈ R^{d_{att}×d_x}$,   
-    $W^h_k ∈ R^{d_{att}×d_z}$,  
-    $W^h_v ∈ R^{d_{att}×d_z}$   
-$Wo ∈ R^{d_{out}×H×d_{att}}$, Wo is the output linear transformation.
-
-1. For $h ∈ [H]$:  
-2. $Xq_h$ ← $LinearTransformation(X, W^h_q)$  
-3. $Xk_h$ ← $LinearTransformation(Z, W^h_k)$  
-4. $Xv_h$ ← $LinearTransformation(Z, W^h_v)$  
-5. Cache keys and values: $cache_k$, $cache_v$ based on current position  
-6. If $N_kv < H$:  
-7. Repeat keys and values for local attention using RepetitionFactor  
-8. Compute scores: $S_h$ ← $Xq_h • Xk_h^T / sqrt(datt)$  
-9. Apply mask to scores: $S_h$ ← $S_h + Mask$  
-10. Normalize scores: $S_h$ ← $Softmax(S_h)$  
-11. Compute context: $C_h$ ← $S_h • Xv_h$  
-12. $Y ← [C_1, C_2, ..., C_H]$  
-13. return $\tilde{V} = WoY$  
-
-### Algorithm: RMS Layer Normalization
-
-**Input:** $x ∈ ℝ^d$, neural network activations.   
-**Output:** $y ∈ ℝ^d$, normalized activations.   
-**Parameters:** $γ, β ∈ ℝ^d$, element-wise scale and offset.   
-
-1. $μ ← Σ_{i=1}^d x[i]/d$
-2. $σ^2 ← Σ_{i=1}^d (x[i] - μ)^2/d$
-3. $RMS ← sqrt(Σ_{i=1}^d x[i]^2/d)$
-4. $y ← (x/RMS) * γ + β$
-5. return $y$
-
-
-### Algorithm: Unembedding
-**Input:** $\( e \in \mathbb{R}^{d_e} \)$: a token encoding.   
-**Output:** $\( p \in \Delta(V) \)$: a probability distribution over the vocabulary.   
-**Parameters:** $\( W_u \in \mathbb{R}^{N \times d_e} \)$: the unembedding matrix.   
-
-1. return p = $softmax(W_u e)$
-
-**************************
-### Algorithm: DTransformer
-
-**Input:** `x`, a sequence of token IDs.
-
-**Output:** $P \in (0,1)^{N \times \text{length}(x)}$, where the t-th column of `P` represents $\hat{P̂_θ}(x[t+1]|x[1:t])$.
-
-**Hyperparameters:** $ℓ_{\text{max}}, L, H, d_e, d_{mlp} \in \mathbb{N}$
+**Input:** 
+- `sequence_embeddings`: A sequence of token embeddings.
 
 **Parameters:**
-- $W_e \in \mathbb{R}^{d_e \times N}$, $W_p \in \mathbb{R}^{d_e \times ℓ_{\text{max}}}$: the token and rotary positional embedding matrices.
-- For each layer `l`:
-  - $W_l$, Group Query Attention parameters for layer `l`.
-  - $\gamma^1, \beta^1, \gamma^2, \beta^2$: sets of RMS layer-norm parameters.
-  - $w^l_{mlp1}, b^l_{mlp1}, w^l_{mlp2}, b^l_{mlp2}$: MLP parameters.
-- $\gamma, \beta$: final RMSlayer-norm parameters.
-- $W_u \in \mathbb{R}^{N \times d_e}$: the unembedding matrix.
+- `max_seq_length`: The maximum sequence length.
 
-**Algorithm:**
-1. $ℓ \leftarrow \text{length}(x)$
-2. For each `t` in `ℓ`: $e_t \leftarrow W_e \cdot x[t] + W_p[:,t]$
-3. $X \leftarrow [e_1, e_2, ... e_ℓ]$
-4. For each `l` from 1 to `L`:
-   - For each `t` in `ℓ`:
-     - $X{[:,t]} \leftarrow {RMSLayerNorm}(\tilde{X}{[:,t]} | \gamma_l{1}, \beta_l{1})$
-     - $X \leftarrow X + \text{GroupedQueryAttention}(X, W_l, \text{Mask}[t, :] = [t \leq t'])$$
-     - $X{[:,t]} \leftarrow {RMSLayerNorm}(\tilde{X}{[:,t]} | \gamma_l{2}, \beta_l{2})$
-     - $X \leftarrow X + w^l_{mlp2} \cdot \text{SwiGLU}(w^l_{mlp1} \tilde{X} + b^l_{mlp1}1^T) + b^l_{mlp2}1^T$
-5. For each `t` in `ℓ`: $X[:,t] \leftarrow {RMSLayerNorm}(X[:,t], \gamma, \beta)$
-6. Return $P = \text{softmax}(W_u X)$
+**Output:** 
+- The same sequence with Rotary Positional Embeddings applied.
+
+**Procedure:**
+1. For each position `i` in the sequence and each dimension `d` in the embedding:
+   1. Compute a rotation matrix `R` based on `i` and `d`.
+   2. Apply `R` to the embedding of the token at position `i`.
+
+### Algorithm: Attention with Linear Biases (ALiBi)
+
+**Input:** 
+- `Q`: Query matrix.
+- `K`: Key matrix.
+- `V`: Value matrix.
+
+**Parameters:**
+- `m`: A constant bias (one per head).
+
+**Hyperparameters:**
+- `d_k`: Dimension of the key vectors.
+
+**Output:** 
+- The attention-weighted value matrix.
+
+**Procedure:**
+1. Compute the dot product of `Q` and `K^T`.
+2. Add the bias `m` to each dot product.
+3. Scale the result by `1/sqrt(d_k)`.
+4. Apply softmax to obtain attention weights.
+5. Multiply the attention weights by `V` to get the final output.
+
+
+### Algorithm: SwiGLU (Swish-Gated Linear Unit)
+
+**Input:** 
+- `X`: An input tensor.
+
+**Parameters:**
+- `W1`, `b1`, `W2`, `b2`: Trainable parameters for the linear transformations.
+
+**Output:** 
+- An output tensor after the SwiGLU activation.
+
+**Procedure:**
+1. Compute the intermediate tensor `A` as `A = X * W1 + b1`.
+2. Apply the sigmoid function to get `S = sigmoid(A)`.
+3. Compute another intermediate tensor `B` as `B = X * W2 + b2`.
+4. Apply the Swish function to `B`: `Swish(B) = B * S`.
+5. The output is the element-wise product of `X` and `Swish(B)`.
+
+### Algorithm: Memory Efficient Attention
+
+**Input:** 
+- `Q`: Query matrix.
+- `K`: Key matrix.
+- `V`: Value matrix.
+- `attention_mask`: An optional mask to exclude certain positions.
+
+**Output:** 
+- The attention-weighted value matrix with reduced memory usage.
+
+**Procedure:**
+1. Compute attention scores using a memory-efficient attention mechanism.
+2. Apply the `attention_mask` to the scores, if provided.
+3. Normalize the scores using softmax.
+4. Multiply the normalized scores by `V` to get the final output.
+
+### Algorithm: Root Mean Square Layer Normalization (RMSNorm)
+
+**Input:** 
+- `X`: An input tensor.
+
+**Parameters:**
+- `gain`: A trainable scale parameter.
+- `bias`: A trainable shift parameter.
+
+**Output:** 
+- The RMS-normalized tensor.
+
+**Procedure:**
+1. Compute the root mean square of `X` for each layer.
+2. Divide `X` by the root mean square to normalize.
+3. Scale and shift the normalized tensor using `gain` and `bias`.
+
+### Algorithm: AdamW Optimization
+
+**Input:** 
+- `parameters`: The model parameters.
+- `gradients`: The computed gradients for the parameters.
+- `learning_rate`: The learning rate at the current step.
+
+**Hyperparameters:**
+- `beta1`: The exponential decay rate for the first moment estimates (typically 0.9).
+- `beta2`: The exponential decay rate for the second moment estimates (typically 0.95).
+- `weight_decay`: The weight decay coefficient.
+- `grad_norm_clip`: The norm to clip gradients to.
+
+**Output:** 
+- Updated model parameters.
+
+**Procedure:**
+1. Initialize `step` to 0.
+2. While training:
+   1. Increment `step`.
+   2. Compute biased first and second moment estimates of the gradients.
+   3. Adjust gradients with weight decay.
+   4. Compute bias-corrected first and second moment estimates.
+   5. Update parameters with gradients using the AdamW update rule.
+   6. Clip gradients to `grad_norm_clip`.
+   7. Adjust `learning_rate` using warm-up and cosine decay.
+
+ 
+
 
 **************************
 
 ## Critical Analysis
+
 ### Limitations and Ethical Considerations
 
-Like other large language models, Baichuan 2 also faces ethical challenges. It’s prone to biases andtoxicity, especially given that much of its training data originates from the internet. Despite our best efforts to mitigate these issues using benchmarks
-like Toxigen (Hartvigsen et al., 2022), the risks cannot be eliminated, and toxicity tends to increase
-with model size. Moreover, the knowledge of
-Baichuan 2 models is static and can be outdated or
-incorrect, posing challenges in fields that require
-up-to-date information like medicine or law. While
-optimized for Chinese and English for safety, the
-model has limitations in other languages and may
-not fully capture biases relevant to non-Chinese
-cultures.
-There’s also the potential for misuse, as the
-model could be used to generate harmful or
-misleading content. Although we try our best
-efforts to balance safety and utility, some safety
-measures may appear as over-cautions, affecting
-the model’s usability for certain tasks. We
-encourage users to make responsible and ethical
-use of Baichuan 2 models. Meanwhile, we will
-continue to optimize these issues and release
-updated versions in the future.
+the knowledge of Baichuan 2 models is static and can be outdated or incorrect, posing challenges in fields that requireup-to-date information like medicine or law. While optimized for Chinese and English for safety, themodel has limitations in other languages and maynot fully capture biases relevant to non-Chinese cultures.
+
+There’s also the potential for misuse, as the model could be used to generate harmful or misleading content. Although the team had tried their best
+efforts to balance safety and utility, some safety measures may appear as over-cautions, affecting the model’s usability for certain tasks. 
 
 ## Answer: What is the usage of Byte-pair encoding (BPE)?
+
+This approach enables LLM models to handle out-of-vocabulary (OOV) words and reduces the overall vocabulary size.
+
 ## Answer: Why Use ALiBi?
+
 Traditional position embeddings can sometimes be problematic, especially when dealing with non-linear relationships in language or when handling sequences longer than those seen during training. ALiBi's head-specific constant bias simplifies the model without compromising on performance, making it an attractive choice for NLP tasks.
 
 
@@ -408,8 +324,11 @@ Traditional position embeddings can sometimes be problematic, especially when de
 https://youtu.be/ZrBtgtWXbb4?si=Wm1Fuy32fOJky3JZ
 
 ## Code Demo
-- Try Beichuan2: 
+
+- Try Beichuan2:
+  
 - Fine tune Beichuan2: 
+
 
 ## References
 
