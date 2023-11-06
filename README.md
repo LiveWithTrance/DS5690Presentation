@@ -15,22 +15,22 @@ The paper introduces "Baichuan 2," which tackles the problem of accessibility an
 ### Approach:
 The authors' approach involves training Baichuan 2 from scratch, using a massive dataset of 2.6 trillion tokens. The model comes in two sizes, with 7 billion and 13 billion parameters, positioning it among the larger models available in the open-source domain. The training process is designed to be transparent, with checkpoints to be released publicly, allowing the research community to study and understand the model's training dynamics.
 ### Training Data
-2.6 Trillion tokens. Data sourcing: During data acquisition, our
-objective is to pursue comprehensive data
-scalability and representativeness. We gather data
-from diverse sources including general internet
-webpages, books, research papers, codebases,
-and more to build an extensive world knowledge
-system. 
+2.6 Trillion token. During data acquisition, our objective is to pursue comprehensive data scalability and representativeness. We gather data from diverse sources including general internet webpages, books, research papers, codebases, and more to build an extensive world knowledge system. 
 
-The composition of the training corpus is
-shown in Figure 1.
+The composition of the training corpus:
+
+<img width="415" alt="Training data resource" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/58f42a34-df73-489f-96ba-52c11cc6b929">
 
 
 ### Beichuan2 Performance
 
 #### Academic Benchmarks
+<img width="740" alt="benchmark" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/db312d4f-a6d4-409a-a428-06ae830bf59c">
 
+
+### Question1
+
+### Question2
 
 **************************
 
@@ -39,52 +39,51 @@ shown in Figure 1.
 The model architecture of Baichuan 2 is based on the prevailing Transformer (Vaswani et al., 2017) with the following modifications.
 
 ### Tokenizer
+A tokenizer needs to balance two critical factors: a high compression rate for efficient inference, and an appropriately sized vocabulary to ensure adequate training of each word embedding.
+
 <img width="415" alt="截屏2023-11-05 15 58 18" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/93ca01e6-5f9b-47bd-8339-06ed8f8b9e20">
 
+#### Byte-pair encoding (BPE)
+
+Byte-Pair Encoding (BPE) is a data compression and subword tokenization algorithm. BPE iteratively replaces the most frequent pair of bytes in a sequence with a single, unused byte. For instance, given the character sequence aaabdaaabac, the sub-sequence aa occurs three times and is the most frequent pair. BPE would replace aa with a new symbol, say Z, resulting in the sequence ZabdZabac​3​. This process continues iteratively, reducing the most common pairs of characters or bytes in the data, which in turn helps in compressing the data.
+
 ### Positional Embeddings
-#### Rotary Embedding (RoPE)
+#### Rotary Positional Embedding (RoPE)
 
-One of the fundamental advancements in LLaMA2 is the adoption of Rotary Position Embedding (RoPE) in place of traditional absolute positional encoding. What sets RoPE apart is its ability to seamlessly integrate explicit relative position dependencies into the self-attention mechanism of the model. This dynamic approach offers several key advantages:
-- Flexibility in Sequence Length: Traditional position embeddings often require defining a maximum sequence length, limiting their adaptability. RoPE, on the other hand, is incredibly flexible. It can generate position embeddings on-the-fly for sequences of any length.
-- Decaying Inter-Token Dependency: RoPE is smart about modeling the relationship between tokens. As tokens become more distant from each other in a sequence, RoPE naturally reduces their inter-token dependencies. This gradual decay aligns more closely with how humans understand language, where the importance of earlier words tends to diminish.
-- Enhanced Self-Attention: RoPE equips the linear self-attention mechanisms with relative position encoding, a feature not present in traditional absolute positional encoding. This enhancement allows for more precise utilization of token embeddings.
+RoPE is used for for Baichuan 2-7B.
 
-#### ALiBi
+#### Attention with Linear Biases (ALiBi)
+ALiBi is used for Baichuan 2-13B, which is different from most of the open-source models using RoPE.
 
-#### RMSNorm (Root Mean Square Layer Normalization)
+Attention with Linear Biases (ALiBi) presents a novel method for inference extrapolation in Transformer models, particularly during the computation of attention scores for each head. Here's a detailed breakdown:
 
-Beichuan2 adopts Root Mean Square Layer Normalization (RMSNorm), to enhance the transformer architecture by replacing the existing Layer Normalization (LayerNorm). LayerNorm has been beneficial for improving training stability and model convergence, as it re-centers and re-scales input and weight matrix values. However, this improvement comes at the cost of computational overhead, which slows down the network.
+1. **Introduction and Purpose**:
+   ALiBi stands for Attention with Linear Biases. It's introduced as an alternative to traditional positional encodings in Transformers, aiming to facilitate the handling of sequences at inference time which are longer than the ones encountered during training. Unlike position embeddings, ALiBi adds a constant bias to each attention score, simplifying computations and foregoing the learning of the scalar throughout training【39†(serp.ai)】【41†(Papers With Code)】.
 
-$$ \text{RMS}(x) = \sqrt{\frac{1}{N} \sum_{i=1}^{N} x_i^2} $$
+2. **Working Mechanism**:
+   - **Bias Addition**: In the attention sublayer of the Transformer model, when computing attention scores for each head, a constant bias is added to each score. This bias is head-specific and is set to a scalar known as \( m \), which remains constant and is not learned during training【47†(serp.ai)】.
+   - **Modified Attention Score Calculation**: The attention score calculation involves the dot product of two vectors, \( \textbf{q}_i \) and \( \textbf{k}_j \), followed by the application of the softmax function in traditional attention mechanisms. However, ALiBi modifies this process by adding a bias term to the dot product before the softmax function is applied. The new formula for attention scores in ALiBi is:
+     \[
+     \text{Attention}(\textbf{q}, \textbf{k}) = \text{softmax}\left(\frac{\textbf{q}\textbf{k}^T + m}{\sqrt{d_k}}\right) \textbf{v}
+     \]
+     In this formula, \( m \) represents the head-specific bias scalar, and \( \textbf{q} \) and \( \textbf{k} \) represent vectors of dimension \( d_k \)【47†(serp.ai)】.
 
-$$ y = \frac{x}{\text{RMS}(x)} \times \gamma + \beta $$
+3. **Advantages**:
+   - **Simplification and Speed**: ALiBi simplifies the calculation of attention scores, making it faster than using traditional position embeddings. It does not require the additional computation and optimization that comes with learning position embeddings during training【47†(serp.ai)】.
+   - **Accuracy Maintenance**: The resulting attention scores obtained using ALiBi have been found to be just as accurate in predicting the model's output as those obtained using position embeddings【47†(serp.ai)】.
+   - **Longer Sequence Handling**: ALiBi enables Transformer models to handle longer sequences at inference time compared to the sequences they were trained on, without using actual position embeddings【41†(Papers With Code)】.
+   - **Ease of Implementation**: ALiBi is highlighted for its ease of implementation, especially in NLP applications where traditional position embeddings might not be ideal due to their complexity and computational overhead【47†(serp.ai)】.
 
-- γ is the scale parameter.
-- β is the shift parameter.
+4. **Position in the Transformer Architecture**:
+   ALiBi is incorporated instead of adding position embeddings at the base of the transformer stack. A linear bias is added to each attention score, with a head-specific hyperparameter 'm' that is set at the beginning of training and not learned throughout the process【42†(github.com)】.
 
-RMSNorm, on the other hand, retains the re-scaling invariance property while simplifying the computation. It regulates the combined inputs to a neuron using the root mean square (RMS), providing implicit learning rate adaptation. This makes RMSNorm computationally more efficient than LayerNorm.
+5. **Application**: 
+   ALiBi has been shown to be a valuable tool for Natural Language Processing (NLP) applications, aiming to improve the speed and accuracy of Transformer models by offering a simpler alternative for computing attention scores【47†(serp.ai)】.
 
-$$ \mu = \frac{1}{N} \sum_{i=1}^{N} x_i $$
+6. **Innovative Positioning Method**:
+   ALiBi revolutionizes how positional information is incorporated into the model, marking a shift from traditional attention mechanisms that relied on positional encodings【40†(spraphul.github.io)】.
 
-$$ \sigma^2 = \frac{1}{N} \sum_{i=1}^{N} (x_i - \mu)^2 $$
-
-$$ y = \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} \times \gamma + \beta $$
-
-- x is the input vector.
-- N is the dimensionality of x.
-- μ is the mean of the input.
-- $σ^2$ is the variance of the input.
-- ϵ is a small constant added for numerical stability.
-- γ is the scale parameter.
-- β is the shift parameter.
-
-Extensive experiments across various tasks and network architectures show that RMSNorm performs as effectively as LayerNorm while reducing computation time by 7% to 64%.
-
-This custom script first standardizes the input x, by dividing it by its root mean square, thereby making it invariant to scaling changes. The learned weight parameter self.weight is applied to each element in the standardized tensor. This operation adjusts the magnitude of the values based on the learned scaling factor.
-
-#### KV (Key-Value) Caching
-
-Key-Value (KV) caching is a technique used to accelerate the inference process in machine learning models, particularly in autoregressive models like GPT and Llama. In these models, generating tokens one by one is a common practice, but it can be computationally expensive because it repeats certain calculations at each step. To address this, KV caching comes into play. It involves caching the previous Keys and Values, so we don’t need to recalculate them for each new token. This significantly reduces the size of matrices used in calculations, making matrix multiplications faster. The only trade-off is that KV caching requires more GPU memory (or CPU memory if a GPU isn’t used) to store these Key and Value states.
+Through ALiBi, Transformer models can efficiently handle longer sequences at inference, making it a promising method for improving performance in various NLP tasks.
 
 
 #### SwiGLU (Swiss Function + Gated Linear Unit)
@@ -121,50 +120,86 @@ performance and efficiency benefits for Baichuan
 **************************
 ## Pseudal-code
 
-### Algorithm: Token Embedding
+### Algorithm: Byte-Pair Encoding (BPE)
+**Input:** 
+- `training_text` ∈ \( \mathcal{S} \), a string containing the text used for training.
+- `num_merges` ∈ \( \mathbb{N} \), the number of merge operations to perform.
 
-**Input:** $\( v \in V \cong [N_v] \)$, a token ID.  
-**Output:** $\( e \in \mathbb{R}^{d_e} \)$, the vector representation of the token.  
-**Parameters:** $\( W_e \in \mathbb{R}^{d_e \times N_v} \)$, the token embedding matrix.
+**Output:** 
+- `vocabulary` ∈ \( \mathcal{D} \), a dictionary representing the subword vocabulary with subwords as keys and their frequencies as values.
 
-1. return $e = W_e[:, v]$
+1. **Initialize Vocabulary**:
+    - `vocabulary = get_unique_characters(training_text)`
+2. **Perform Merge Operations**:
+    - For `i` in `range(num_merges)`:
+        a. `pair_frequencies = calculate_pair_frequencies(training_text)`
+        b. `most_frequent_pair = find_most_frequent_pair(pair_frequencies)`
+        c. `new_subword = merge_pair(most_frequent_pair)`
+        d. `update_vocabulary(vocabulary, new_subword)`
+        e. `training_text = replace_pair(training_text, most_frequent_pair, new_subword)`
 
-### Algorithm: Rotary Positional Embedding
-**Input:** $\( x_q, x_k \) ∈ \( \mathbb{R}^{d} \)$, query and key tensors.  
-**Output:** $\( x_q', x_k' \) ∈ \( \mathbb{R}^{d} \)$, tensors with rotary embeddings applied.   
-**Parameters:**    
-  dim $∈ \( \mathbb{N} \)$, dimension of the frequency tensor.   
-  end $∈ \( \mathbb{N} \)$, end index for precomputing frequencies.   
-  $\theta$ $∈ \( \mathbb{R} \)$, scaling factor for frequency computation, default to 10000.0.   
-  $freqs_{cis}$ $∈ \( \mathbb{C}^{dim \times end} \)$, precomputed frequency tensor with complex exponentials.   
+### Algorithm: BPE Tokenization
+**Input:** 
+- `text` ∈ \( \mathcal{S} \), a string containing the text to be tokenized.
+- `vocabulary` ∈ \( \mathcal{D} \), the subword vocabulary obtained from the training phase.
 
-1. Compute frequency scale: $\( \text{freqs} = \frac{1.0}{(\theta ^ {(\text{range}(0, \text{dim}, 2)[: (\text{dim} // 2)] / \text{dim})}) }\)$   
-2. Initialize time indices: $\( t = range(\text{end}) \)$   
-3. Compute outer product of t and freqs: $freqs_{mat}$ = $\text{outer}(t, \text{freqs}) \)$      
-4. Convert $freqs_{mat}$ to polar coordinates: $freqs_{cis}$ = polar(ones_like($freqs_{mat}$), $freqs_{mat}$)     
-5. Convert $\( x_q \)$ and $\( x_k \)$ into complex matrices   
-6. Reshape $freqs_{cis}$ for broadcasting compatibility with $\( x_q \)$ and $\( x_k \)$   
-7. Apply rotary embeddings to $\( x_q \)$ and $\( x_k \)$ using complex multiplication   
-8. Convert the results back to real values: $\( x_q' \), \( x_k' \)$   
-9. Return $\( x_q' \)$ and $\( x_k' \)$   
+**Output:** 
+- `tokens` ∈ \( \mathcal{L} \), a list of tokens representing the tokenized text.
 
-### Algorithm: Basic Single-query Attention
-**Input:**  
-$\( e \in \mathbb{R}^{d_{in}} \)$ - vector representation of the current token. <br>
-$\( e_t \in \mathbb{R}^{d_{in}} \)$ - vector representations of context tokens $\( t \in [T] \).$ <br>
+1. **Initialize Token List**:
+    - `tokens = []`
+2. **Tokenize Text**:
+    - While `text` is not empty:
+        a. `longest_subword = find_longest_matching_subword(text, vocabulary)`
+        b. `tokens.append(longest_subword)`
+        c. `text = remove_subword(text, longest_subword)`
 
-**Output:**  
-$\( \mathbf{v} \in \mathbb{R}^{d_{out}} \)$ - vector representation of the token and context combined. <br>
+### Algorithm: BPE Detokenization
+**Input:** 
+- `tokens` ∈ \( \mathcal{L} \), a list of tokens representing the tokenized text.
 
-**Parameters:**  
-$\( W_q, W_k \in \mathbb{R}^{d_{attn} \times d_{in}} \)$, $\( b_q, b_k \in \mathbb{R}^{d_{attn}} \)$ - the query and key linear projections. <br>
-$\( W_v \in \mathbb{R}^{d_{out} \times d_{in}} \)$, $\( b_v \in \mathbb{R}^{d_{out}} \)$ - the value linear projection. <br>
+**Output:** 
+- `detokenized_text` ∈ \( \mathcal{S} \), a string representing the detokenized text.
 
-1.  $q \leftarrow W_q e + b_q$ <br>
-2.  $k_t \leftarrow W_k e_t + b_k$ <br>
-3.  $v_t \leftarrow W_v e_t + b_v$ <br>
-4.  $\alpha_t \leftarrow \frac{\exp(q^T k_t / \sqrt{d_{attn}})}{\sum_u \exp(q^T k_u / \sqrt{d_{attn}})}$ <br>
-5.  $\mathbf{\tilde{v}} = \sum_{t=1} \alpha_t \times v_t $
+1. **Concatenate Tokens**:
+    - `detokenized_text = concatenate_tokens(tokens)`
+
+
+### Algorithm: Rotary Positional Embedding (RoPE)
+**Input:**
+- \( x_q, x_k \) ∈ \( \mathbb{R}^{d} \), query and key tensors.
+  
+**Output:**
+- \( x_q', x_k' \) ∈ \( \mathbb{R}^{d} \), tensors with rotary embeddings applied.
+
+**Parameters:**
+- \( \theta \) ∈ \( \mathbb{R} \), a non-zero constant for rotation matrix computation.
+- \( m, n \) ∈ \( \mathbb{N} \), absolute positions of tokens.
+
+1. **Define Rotation Matrix Function:**
+   - \( \mathbf{R}_{\theta,t} = \begin{pmatrix} \cos t\theta & -\sin t\theta \\ \sin t\theta & \cos t\theta \end{pmatrix} \)
+
+2. **Compute Rotation Matrices for Queries and Keys:**
+   - \( \mathbf{R}_{\theta,m} = \mathbf{R}_{\theta,t=m} \)
+   - \( \mathbf{R}_{\theta,n} = \mathbf{R}_{\theta,t=n} \)
+
+3. **Apply Rotary Embeddings to Queries and Keys:**
+   - \( f_q(\mathbf{x}_m, m) = \mathbf{R}_{\theta,m} \mathbf{W}_q \mathbf{x}_m = \mathbf{q}_m \)
+   - \( f_k(\mathbf{x}_n, n) = \mathbf{R}_{\theta,n} \mathbf{W}_k \mathbf{x}_n = \mathbf{k}_n \)
+
+4. **Compute Relative Rotation Matrix:**
+   - \( \mathbf{R}_{\theta,n-m} = \mathbf{R}_{\theta,m}^\mathsf{T} \mathbf{R}_{\theta,n} \)
+
+5. **Compute Inner Product:**
+   - \( g(\mathbf{x}_m, \mathbf{x}_n, n-m) = \mathbf{x}_m^\mathsf{T} \mathbf{W}_q^\mathsf{T} \mathbf{R}_{\theta,n-m} \mathbf{W}_k \mathbf{x}_n = \mathbf{q}_m^\mathsf{T} \mathbf{k}_n \)
+
+6. **Output Rotated Queries and Keys:**
+   - \( x_q' = f_q(\mathbf{x}_m, m) \)
+   - \( x_k' = f_k(\mathbf{x}_n, n) \)
+
+7. **Return:**
+   - Return \( x_q', x_k' \)
+ 
 
 ### Algorithm: Attention
 **Input:**  
@@ -336,11 +371,14 @@ updated versions in the future.
 
 - Baichuan 2: Open Large-scale Language Models: https://arxiv.org/pdf/2309.10305
 - Baichuan2-7B-Intermediate-Checkpoints: https://huggingface.co/baichuan-inc/Baichuan2-7B-Intermediate-Checkpoints
-- Mistral-7b Paper: https://arxiv.org/pdf/2310.06825.pdf
-- RMS Normalization: https://arxiv.org/abs/1910.07467  
-- Rotary Positional Embedding (RoPE): https://arxiv.org/abs/2104.09864  
+- Byte-Pair Encoding Paper: https://arxiv.org/pdf/2310.06825
+- Sentence Piece: https://arxiv.org/pdf/1808.06226
+
+- Rotary Positional Embedding (RoPE): https://arxiv.org/abs/2104.09864
+
+- X-formers: https://github.com/facebookresearch/xformers
 - SwiGLU Activation Function: https://paperswithcode.com/method/swiglu
-- Group Query Attention Paper: https://arxiv.org/pdf/2305.13245.pdf
+
 - MMLU Dataset: https://paperswithcode.com/dataset/mmlu  
 - MMLU Paper: https://arxiv.org/abs/2009.03300
 - CMMLU Dataset: https://github.com/haonan-li/CMMLU/tree/master/data
