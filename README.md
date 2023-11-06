@@ -5,32 +5,34 @@ Aiyuan Yang, Bin Xiao, Bingning Wang, Borong Zhang, Ce Bian, Chao Yin, Chenxu Lv
 
 ## Presenter:Changzhou Li
 
-
 ## Overview
-Large language models (LLMs) have demonstrated remarkable performance on a variety of natural language tasks based on just a few examples of natural language instructions, reducing the need for extensive feature engineering. However, most powerful LLMs are closed-source or limited in their capability for languages other than English. In this technical report, we present Baichuan 2, a series of large-scale multilingual language models containing 7 billion and 13 billion parameters, trained from scratch, on 2.6 trillion tokens. Baichuan 2 matches or outperforms other open-source models of similar size on public benchmarks like MMLU, CMMLU, GSM8K, and HumanEval. Furthermore, Baichuan 2 excels in vertical domains such as medicine and law. We will release all pre-training model checkpoints to benefit the research community in better understanding the training dynamics of Baichuan 2.
-### Context
-In recent years, the field of natural language processing has been revolutionized by the advent of large language models (LLMs). These models have shown exceptional ability in understanding and generating human-like text, leading to significant improvements in a variety of language tasks. However, the majority of these advanced models are proprietary, closed-source, and often exhibit limitations when dealing with languages other than English. 
-### Problem Addressed
-The paper introduces "Baichuan 2," which tackles the problem of accessibility and language inclusivity in large-scale language models. The authors aim to provide an open-source alternative to the existing LLMs that not only performs competitively on standard benchmarks but also offers extensive multilingual support and excels in specialized domains such as medicine and law.
-### Approach:
-The authors' approach involves training Baichuan 2 from scratch, using a massive dataset of 2.6 trillion tokens. The model comes in two sizes, with 7 billion and 13 billion parameters, positioning it among the larger models available in the open-source domain. The training process is designed to be transparent, with checkpoints to be released publicly, allowing the research community to study and understand the model's training dynamics.
+
+### Introduction
+
+The landscape of Large Language Models (LLMs) in 2023 is characterized by rapid development and the emergence of numerous advanced models. There are new LLM coming out each month and today I will talk about a paper about a new LLM Beichuan 2, a series of large-scale multilingual language models containing 7 billion and 13 billion parameters.
+
+### Problem Addressed in the paper
+
+Most powerful Large language models (LLMs) are closed-source or limited in their capability for languages other than English. Baichuan 2, as a second generation of Beichuan model, aims to work well in multilingual tasks especially in Chinese. Also, in order to benefit the research community in better understand the training dynamics of LLM, the team will release all the pre-training model checkpoints.
+
+### Beichuan2 Performance
+
+#### Academic Benchmark
+<img width="740" alt="benchmark" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/db312d4f-a6d4-409a-a428-06ae830bf59c">
+In the above, C-Eval, CMMLU and Gaokao are the Chinese benchmarks.
+
 ### Training Data
 2.6 Trillion token. During data acquisition, our objective is to pursue comprehensive data scalability and representativeness. We gather data from diverse sources including general internet webpages, books, research papers, codebases, and more to build an extensive world knowledge system. 
 
-The composition of the training corpus:
+The composition of the training data:
 
 <img width="415" alt="Training data resource" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/58f42a34-df73-489f-96ba-52c11cc6b929">
 
 
-### Beichuan2 Performance
 
-#### Academic Benchmarks
-<img width="740" alt="benchmark" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/db312d4f-a6d4-409a-a428-06ae830bf59c">
+### Question 1: What is the usage of Byte-pair encoding (BPE)?
+### Question 2: What is the advantage of Attention with Linear Biases (ALiBi)?
 
-
-
-
-### Question2
 
 **************************
 
@@ -38,28 +40,44 @@ The composition of the training corpus:
 
 The model architecture of Baichuan 2 is based on the prevailing Transformer (Vaswani et al., 2017) with the following modifications.
 
-### Tokenizer
+## Tokenizer
 
 A tokenizer needs to balance two critical factors: a high compression rate for efficient inference, and an appropriately sized vocabulary to ensure adequate training of each word embedding.
 
 <img width="415" alt="截屏2023-11-05 15 58 18" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/93ca01e6-5f9b-47bd-8339-06ed8f8b9e20">
 
-#### Byte-pair encoding (BPE)
+### Byte-pair encoding (BPE)
 
-Byte-Pair Encoding (BPE) is a data compression and subword tokenization algorithm. BPE iteratively replaces the most frequent pair of bytes in a sequence with a single, unused byte. For instance, given the character sequence aaabdaaabac, the sub-sequence aa occurs three times and is the most frequent pair. BPE would replace aa with a new symbol, say Z, resulting in the sequence ZabdZabac​3​. This process continues iteratively, reducing the most common pairs of characters or bytes in the data, which in turn helps in compressing the data.
+Byte-Pair Encoding (BPE) is a data compression and subword tokenization algorithm.
 
-## Positional Embeddings
+BPE iteratively replaces the most frequent pair of bytes in a sequence with a single, unused byte. For instance, given the character sequence aaabdaaabac, the sub-sequence aa occurs three times and is the most frequent pair. BPE would replace aa with a new symbol, say Z, resulting in the sequence ZabdZabac​3​. This process continues iteratively, reducing the most common pairs of characters or bytes in the data, which in turn helps in compressing the data.
+
+BPE ensures that the most common words are represented in the vocabulary as a single token while the rare words are broken down into two or more subword tokens and this is in agreement with what a subword-based tokenization algorithm does.
+
+Usage: This approach enables LLM models to handle out-of-vocabulary (OOV) words and reduces the overall vocabulary size.
+
 ### Rotary Positional Embedding (RoPE)
+
 RoPE is used for for Baichuan 2-7B.
 
+Rotary Position Embedding (RoPE) is a concept used within transformer architectures to encode the absolute position of tokens in a sequence. Unlike traditional position embeddings that add a separate positional vector to each token, RoPE incorporates positional information directly into the attention mechanism of the transformer model.
+
+Advantages:
+
+Flexibility with Sequence Length: RoPE can handle any sequence length, making it adaptable for NLP models that process texts of varying lengths, unlike traditional position embeddings that are fixed to a specific sequence length​1​.
+
+Decaying Inter-Token Dependency: It reduces the influence of each token on others with increasing relative distances, which is beneficial for long sequences. This feature helps in reducing computational complexity while still preserving accurate predictions​1​.
+
+Enhanced Self-Attention: RoPE is capable of equipping linear self-attention with relative position encoding. By considering the relative positions of tokens during self-attention, models can achieve more accurate predictions and a deeper understanding of the relationships between tokens​1​.
 
 ### Attention with Linear Biases (ALiBi)
-ALiBi is used for Baichuan 2-13B, which is different from most of the open-source models using RoPE.
 
-1. **Introduction and Purpose**:
-   ALiBi stands for Attention with Linear Biases. It's introduced as an alternative to traditional positional encodings in Transformers, aiming to facilitate the handling of sequences at inference time which are longer than the ones encountered during training. Unlike position embeddings, ALiBi adds a constant bias to each attention score, simplifying computations and foregoing the learning of the scalar throughout training.
 
-2. **Working Mechanism**:
+Attention with Linear Biases(ALiBi) is used for Baichuan 2-13B, which is different from most of the open-source models using RoPE.
+
+Attention with Linear Biases is introduced as an alternative to traditional positional encodings in Transformers, aiming to facilitate the handling of sequences at inference time which are longer than the ones encountered during training. Unlike position embeddings, ALiBi adds a constant bias to each attention score, simplifying computations and foregoing the learning of the scalar throughout training.
+
+**Working Mechanism**:
 - **Bias Addition**: In the attention sublayer of the Transformer model, when computing attention scores for each head, a constant bias is added to each score. This bias is head-specific and is set to a scalar known as \( m \), which remains constant and is not learned during training.
 - **Modified Attention Score Calculation**: The attention score calculation involves the dot product of two vectors, \( \mathbf{q}_i \) and \( \mathbf{k}_j \), followed by the application of the softmax function in traditional attention mechanisms. However, ALiBi modifies this process by adding a bias term to the dot product before the softmax function is applied. The new formula for attention scores in ALiBi is:
 
@@ -79,28 +97,13 @@ Where:
 - **Eases Implementation**: Without position embeddings, ALiBi reduces the computational complexity, making it easier to implement and train Transformer models.
 - **Handles Longer Sequences**: ALiBi is particularly effective for sequences at inference time that are longer than those encountered during training.
 
+
 ### Answer of question1 : Why Use ALiBi?
 Traditional position embeddings can sometimes be problematic, especially when dealing with non-linear relationships in language or when handling sequences longer than those seen during training. ALiBi's head-specific constant bias simplifies the model without compromising on performance, making it an attractive choice for NLP tasks.
 
-3. **Advantages**:
-   - **Simplification and Speed**: ALiBi simplifies the calculation of attention scores, making it faster than using traditional position embeddings. It does not require the additional computation and optimization that comes with learning position embeddings during training.
-   - **Accuracy Maintenance**: The resulting attention scores obtained using ALiBi have been found to be just as accurate in predicting the model's output as those obtained using position embeddings【47†(serp.ai)】.
-   - **Longer Sequence Handling**: ALiBi enables Transformer models to handle longer sequences at inference time compared to the sequences they were trained on, without using actual position embeddings【41†(Papers With Code)】.
-   - **Ease of Implementation**: ALiBi is highlighted for its ease of implementation, especially in NLP applications where traditional position embeddings might not be ideal due to their complexity and computational overhead【47†(serp.ai)】.
 
-4. **Position in the Transformer Architecture**:
-   ALiBi is incorporated instead of adding position embeddings at the base of the transformer stack. A linear bias is added to each attention score, with a head-specific hyperparameter 'm' that is set at the beginning of training and not learned throughout the process【42†(github.com)】.
-
-5. **Application**: 
-   ALiBi has been shown to be a valuable tool for Natural Language Processing (NLP) applications, aiming to improve the speed and accuracy of Transformer models by offering a simpler alternative for computing attention scores【47†(serp.ai)】.
-
-6. **Innovative Positioning Method**:
-   ALiBi revolutionizes how positional information is incorporated into the model, marking a shift from traditional attention mechanisms that relied on positional encodings【40†(spraphul.github.io)】.
-
-Through ALiBi, Transformer models can efficiently handle longer sequences at inference, making it a promising method for improving performance in various NLP tasks.
-
-
-#### SwiGLU (Swiss Function + Gated Linear Unit)
+## Activations and Normalizations
+### SwiGLU (Swiss Function + Gated Linear Unit)
 
 SwiGLU, as utilized in LLaMA2 models, is an activation function designed to enhance the performance of the position-wise feed-forward network (FFN) layers in the Transformer architecture.
 
@@ -116,7 +119,10 @@ where σ is the sigmoid function. The purpose of the Swish function is to introd
 
 During the forward pass, the input tensor x is subjected to multi layer of linear transformations. The SwiGLU activation function, applied after first transformation, enhances the expressive power of the model. The final transformation maps the tensor back to its original dimensions. This unique combination of SwiGLU activation and multiple FeedForward layer enhances the performance of the model.
 
-#### memory efficient attention 
+However, SwiGLU has a “bilinear” layer and contains three parameter matrices, differing from the vanilla Transformer’s feed-forward layer
+that has two matrices, so we reduce the hidden sizefrom 4 times the hidden size to 3/8 hidden size and rounded to the multiply of 128.
+
+### memory efficient attention 
 For the attention layer of Baichuan 2, we
 adopt the memory efficient attention (Rabe and
 Staats, 2021) implemented by xFormers2
@@ -129,6 +135,10 @@ performance and efficiency benefits for Baichuan
 2’s large-scale training
 
 
+### RMSNorm
+
+## Optimization
+### AdamW
 
 
 **************************
@@ -353,13 +363,8 @@ $Wo ∈ R^{d_{out}×H×d_{att}}$, Wo is the output linear transformation.
 ## Critical Analysis
 ### Limitations and Ethical Considerations
 
-Like other large language models, Baichuan 2 also
-faces ethical challenges. It’s prone to biases and
-toxicity, especially given that much of its training
-data originates from the internet. Despite our best
-efforts to mitigate these issues using benchmarks
-like Toxigen (Hartvigsen et al., 2022), the risks
-cannot be eliminated, and toxicity tends to increase
+Like other large language models, Baichuan 2 also faces ethical challenges. It’s prone to biases andtoxicity, especially given that much of its training data originates from the internet. Despite our best efforts to mitigate these issues using benchmarks
+like Toxigen (Hartvigsen et al., 2022), the risks cannot be eliminated, and toxicity tends to increase
 with model size. Moreover, the knowledge of
 Baichuan 2 models is static and can be outdated or
 incorrect, posing challenges in fields that require
@@ -379,7 +384,16 @@ use of Baichuan 2 models. Meanwhile, we will
 continue to optimize these issues and release
 updated versions in the future.
 
+## Question Answer 1:
 
+## Question Answer 2:
+
+## Video Overview
+https://youtu.be/ZrBtgtWXbb4?si=Wm1Fuy32fOJky3JZ
+
+## Code Demo
+- Try Beichuan2: 
+- Fine tune Beichuan2: 
 
 ## References
 
@@ -403,11 +417,8 @@ updated versions in the future.
 - Transformers Explained: https://deepgram.com/learn/visualizing-and-explaining-transformer-models-from-the-ground-up  
 - Activation Functions Explained: https://www.geeksforgeeks.org/activation-functions-neural-networks/  
 
-## Video Overview
-https://youtu.be/ZrBtgtWXbb4?si=Wm1Fuy32fOJky3JZ
-## Code Demo
-- Try Beichuan2: 
-- Fine tune Beichuan2: 
+
+
 
 
 
