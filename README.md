@@ -19,6 +19,7 @@ Most powerful Large language models (LLMs) are closed-source or limited in their
 
 #### Academic Benchmark
 <img width="740" alt="benchmark" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/db312d4f-a6d4-409a-a428-06ae830bf59c">
+
 In the above, C-Eval, CMMLU and Gaokao are the Chinese benchmarks.
 
 ### Training Data
@@ -111,36 +112,18 @@ Where:
 
 
 ## Activations and Normalizations
-### SwiGLU (Swiss Function + Gated Linear Unit)
+### SwiGLU (Swish-Gated Linear Unit)
 
-SwiGLU, as utilized in LLaMA2 models, is an activation function designed to enhance the performance of the position-wise feed-forward network (FFN) layers in the Transformer architecture.
+SwiGLU is designed to leverage the benefits of both the Swish and Gated Linear Unit (GLU) activation functions​​. Activation functions in neural networks, like SwiGLU, are crucial for introducing non-linearity, allowing networks to learn complex relationships between inputs and outputs​1.
 
-The definition of SwiGLU is given by the following mathematical expression:
+The Swish function is defined as Swish(x) = x * sigmoid(beta * x), with 'beta' being a trainable parameter, and it has been shown to perform well in deep networks due to its smoothness​1​. On the other hand, GLU, proposed by Microsoft researchers, is expressed as GLU(x) = x * sigmoid(Wx + b), with 'W' and 'b' also being trainable parameters, and has shown effectiveness in natural language processing tasks.
 
-$$ \text{SwiGLU}\left(x, W, V, b, c, \beta\right) = \text{Swish}\_{\beta}\left(xW + b\right) \otimes \left(xV + c\right) $$
+However, this paper mentions that SwiGLU has a “bilinear” layer and contains three parameter matrices, differing from the vanilla Transformer’s feed-forward layer that has two matrices, so Beichuan2 reduce the hidden sizefrom 4 times the hidden size to 3/8 hidden size and rounded to the multiply of 128.
 
-Here, x is the input to the neuron, W and V are weight matrices, b and c are bias vectors, and β is a constant. The ⊗ symbol denotes element-wise multiplication, while the Swish function is defined as:
-
-$$ \text{Swish}\_{\beta}\left(x\right) = x \cdot \sigma\left(\beta x\right) $$
-
-where σ is the sigmoid function. The purpose of the Swish function is to introduce non-linearity into the activation function while still allowing for efficient computation.
-
-During the forward pass, the input tensor x is subjected to multi layer of linear transformations. The SwiGLU activation function, applied after first transformation, enhances the expressive power of the model. The final transformation maps the tensor back to its original dimensions. This unique combination of SwiGLU activation and multiple FeedForward layer enhances the performance of the model.
-
-However, SwiGLU has a “bilinear” layer and contains three parameter matrices, differing from the vanilla Transformer’s feed-forward layer
-that has two matrices, so we reduce the hidden sizefrom 4 times the hidden size to 3/8 hidden size and rounded to the multiply of 128.
-
-### memory efficient attention 
-For the attention layer of Baichuan 2, we
-adopt the memory efficient attention (Rabe and
-Staats, 2021) implemented by xFormers2
-. By
-leveraging xFormers’ optimized attention with
-biasing capabilities, we can efficiently incorporate
-ALiBi’s bias-based positional encoding while
-reducing memory overhead. This provides
-performance and efficiency benefits for Baichuan
-2’s large-scale training
+### Memory efficient attention 
+For the attention layer of Baichuan 2, we adopt the memory efficient attention (Rabe andStaats, 2021) implemented by xFormers2
+. By leveraging xFormers’ optimized attention with biasing capabilities, we can efficiently incorporate ALiBi’s bias-based positional encoding while
+reducing memory overhead. This provides performance and efficiency benefits for Baichuan 2’s large-scale training.
 
 
 ### RMSNorm
