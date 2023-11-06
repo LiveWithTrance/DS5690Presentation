@@ -28,8 +28,7 @@ The composition of the training corpus:
 <img width="740" alt="benchmark" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/db312d4f-a6d4-409a-a428-06ae830bf59c">
 
 
-### Question1
-#### Why Use ALiBi?
+
 
 ### Question2
 
@@ -63,12 +62,10 @@ Attention with Linear Biases (ALiBi) presents a novel method for inference extra
    ALiBi stands for Attention with Linear Biases. It's introduced as an alternative to traditional positional encodings in Transformers, aiming to facilitate the handling of sequences at inference time which are longer than the ones encountered during training. Unlike position embeddings, ALiBi adds a constant bias to each attention score, simplifying computations and foregoing the learning of the scalar throughout training.
 
 2. **Working Mechanism**:
-   - **Bias Addition**: In the attention sublayer of the Transformer model, when computing attention scores for each head, a constant bias is added to each score. This bias is head-specific and is set to a scalar known as \( m \), which remains constant and is not learned during training【47†(serp.ai)】.
+   - **Bias Addition**: In the attention sublayer of the Transformer model, when computing attention scores for each head, a constant bias is added to each score. This bias is head-specific and is set to a scalar known as \( m \), which remains constant and is not learned during training.
    - **Modified Attention Score Calculation**: The attention score calculation involves the dot product of two vectors, \( \textbf{q}_i \) and \( \textbf{k}_j \), followed by the application of the softmax function in traditional attention mechanisms. However, ALiBi modifies this process by adding a bias term to the dot product before the softmax function is applied. The new formula for attention scores in ALiBi is:
   ## Attention with Linear Biases (ALiBi)
 
-### Introduction
-ALiBi, which stands for Attention with Linear Biases, is a method to compute attention scores within Transformer models. It introduces a head-specific constant bias to the attention mechanism, simplifying the computation and eliminating the need for position embeddings.
 
 ### How ALiBi Works
 Instead of relying on learned positional embeddings, ALiBi adds a constant scalar bias to each attention score. This bias is head-specific and remains constant during training. The attention scores are computed as follows:
