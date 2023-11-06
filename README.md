@@ -330,9 +330,9 @@ https://youtu.be/ZrBtgtWXbb4?si=Wm1Fuy32fOJky3JZ
 
 ## Code Demo
 
-- Try Beichuan2: 
+- Try Beichuan2: cli_demo.py
   
-- Fine tune Beichuan2: 
+- Fine tune Beichuan2: fine-tune.py
 
 
 ## References
