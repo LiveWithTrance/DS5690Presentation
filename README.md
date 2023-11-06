@@ -314,6 +314,8 @@ They launched a range of model sizes from 10M to 3B parameters, each trained for
 
 ### Limitations and Ethical Considerations
 
+Training data details not shown and only show part of training process, might be difficult to understand how this model could perform well on multilingually.
+
 Aim to be multilingual large language model but only show performace on English and Chinese benchmarks.
 
 Much of its training data originates from the internet. These data contains biases and toxicity, which might cause ethical problems.
