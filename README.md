@@ -73,6 +73,7 @@ Instead of relying on learned positional embeddings, ALiBi adds a constant scala
 
 ```math
 \text{Attention}(\mathbf{q}, \mathbf{k}) = \text{softmax}\left(\frac{\mathbf{q}\mathbf{k}^T + m}{\sqrt{d_k}}\right) \mathbf{v}
+```
 
 3. **Advantages**:
    - **Simplification and Speed**: ALiBi simplifies the calculation of attention scores, making it faster than using traditional position embeddings. It does not require the additional computation and optimization that comes with learning position embeddings during training【47†(serp.ai)】.
