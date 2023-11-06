@@ -29,18 +29,6 @@ The composition of the training data:
 
 <img width="415" alt="Training data resource" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/58f42a34-df73-489f-96ba-52c11cc6b929">
 
-
-
-### Question 1: What is the usage of Byte-pair encoding (BPE)?
-### Question 2: What is the advantage of Attention with Linear Biases (ALiBi)?
-
-
-**************************
-
-## Architecture Overview
-
-The model architecture of Baichuan 2 is based on the prevailing Transformer (Vaswani et al., 2017) with the following modifications.
-
 ## Data Processing 
 
 Beichuan2 focuses on data frequency and quality. Data frequency relies on clustering and deduplication. Beichuan2 bulit a large-scale deduplication and clustering system supporting both LSH-like(Locality-sensitive hashing) features and dense embedding features. This system can cluster
@@ -51,6 +39,15 @@ The size of the training data at different stages of data processing:
 
 <img width="882" alt="截屏2023-11-05 22 29 30" src="https://github.com/LiveWithTrance/DS5690Presentation/assets/111295481/015e2458-292f-4507-907a-a8d6accb9418">
 
+### Question 1: What is the usage of Byte-pair encoding (BPE)?
+### Question 2: What is the advantage of Attention with Linear Biases (ALiBi)?
+
+
+**************************
+
+## Architecture Overview
+
+The model architecture of Baichuan 2 is based on the prevailing Transformer (Vaswani et al., 2017) with the following modifications.
 
 ## Tokenizer
 
@@ -78,7 +75,7 @@ Advantages:
 
 Flexibility with Sequence Length: RoPE can handle any sequence length, making it adaptable for NLP models that process texts of varying lengths, unlike traditional position embeddings that are fixed to a specific sequence length​​.
 
-Decaying Inter-Token Dependency: It reduces the influence of each token on others with increasing relative distances, which is beneficial for long sequences. This feature helps in reducing computational complexity while still preserving accurate predictions​1​.
+Decaying Inter-Token Dependency: It reduces the influence of each token on others with increasing relative distances, which is beneficial for long sequences. This feature helps in reducing computational complexity while still preserving accurate predictions​​.
 
 Enhanced Self-Attention: RoPE is capable of equipping linear self-attention with relative position encoding. By considering the relative positions of tokens during self-attention, models can achieve more accurate predictions and a deeper understanding of the relationships between tokens​1​.
 
@@ -112,6 +109,7 @@ Where:
 
 
 ## Activations and Normalizations
+
 ### SwiGLU (Swish-Gated Linear Unit)
 
 SwiGLU is designed to leverage the benefits of both the Swish and Gated Linear Unit (GLU) activation functions​​. Activation functions in neural networks, like SwiGLU, are crucial for introducing non-linearity, allowing networks to learn complex relationships between inputs and outputs​1.
@@ -121,15 +119,41 @@ The Swish function is defined as Swish(x) = x * sigmoid(beta * x), with 'beta' b
 However, this paper mentions that SwiGLU has a “bilinear” layer and contains three parameter matrices, differing from the vanilla Transformer’s feed-forward layer that has two matrices, so Beichuan2 reduce the hidden sizefrom 4 times the hidden size to 3/8 hidden size and rounded to the multiply of 128.
 
 ### Memory efficient attention 
+
 For the attention layer of Baichuan 2, we adopt the memory efficient attention (Rabe andStaats, 2021) implemented by xFormers2
 . By leveraging xFormers’ optimized attention with biasing capabilities, we can efficiently incorporate ALiBi’s bias-based positional encoding while
 reducing memory overhead. This provides performance and efficiency benefits for Baichuan 2’s large-scale training.
 
 
-### RMSNorm
+### Root Mean Square Layer Normalization (RMSNorm)
+
+RMSNorm modifies LayerNorm by removing the re-centering operation, aiming to provide a more efficient normalization technique without sacrificing performance. It has been shown to be effective across different tasks and models, and offers a more computationally efficient alternative to LayerNorm.
 
 ## Optimization
+
 ### AdamW
+
+They use the AdamW optimizer with β1 set to 0.9 and β2 set to 0.95, weight decay of 0.1, and clip the grad norm to 0.5. The models are warmed up with 2,000 linear scaling steps to reach the max learning rate, followed by cosine decay.
+
+### Mixed Precision Training
+
+The models are trained using BFloat16 mixed precision, which has a better dynamic range than Float16, making it more robust for training large language models. Full precision is used for value-sensitive operations such as positional embeddings to avoid issues with low precision.
+
+### NormHead 
+
+They normalize the output embeddings (referred to as 'head') to stabilize training and improve model performance. NormHead helps to stabilize the norm of the embeddings, particularly for rare tokens, and emphasizes the cosine similarity of embeddings over L2 distance, which is beneficial for the linear classifier that computes logits by dot product.
+
+### Max-z Loss
+
+To address the issue of very large logits, which can cause problems during inference, they introduce a max-z loss to normalize the logits. This loss is inspired by NormSoftmax and the auxiliary z-loss from PaLM, and it helps to stabilize training and make inference more robust to hyper-parameter choices.
+
+## Scaling Laws
+
+### Neural Scaling Laws
+They observe that the error decreases as a power function of training set size, model size, or both. Before training large models, they train smaller models to fit a scaling law for training larger models.
+
+### Model Size Range
+They launched a range of model sizes from 10M to 3B parameters, each trained for up to 1 trillion tokens, using consistent hyper-parameters and the same dataset sourced from Baichuan 2. They use these results to inform the training of larger models.
 
 
 **************************
